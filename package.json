@@ -6,8 +6,9 @@
   "scripts": {
     "build": "node esbuild.js",
     "clean": "rm -rf dist",
-    "prepare": "pnpm run clean && pnpm run build",
-    "dev": "node esbuild.js --watch"
+    "prepare": "pnpm run clean && husky install",
+    "dev": "node esbuild.js --watch",
+    "lint": "eslint src --ext .ts"
   },
   "keywords": [
     "obsidian",
@@ -18,12 +19,20 @@
   "license": "MIT",
   "dependencies": {
     "obsidian": "^0.12.0",
-    "prettier": "^3.5.3",
     "spotify-web-api-js": "^1.5.2"
   },
   "devDependencies": {
+    "@eslint/js": "^9.25.1",
     "cpx": "^1.5.0",
     "esbuild": "^0.25.3",
-    "typescript": "^4.0.0"
+    "eslint": "^9.25.1",
+    "prettier": "^3.5.3",
+    "typescript": "^4.0.0",
+    "typescript-eslint": "^8.31.1",
+    "husky": "^8.0.0",
+    "lint-staged": "^13.0.0"
+  },
+  "lint-staged": {
+    "*.ts": "eslint --fix"
   }
 }

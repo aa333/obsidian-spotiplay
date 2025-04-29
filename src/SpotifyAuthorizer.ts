@@ -1,4 +1,3 @@
-import SpotifyWebApi from 'spotify-web-api-js';
 import { PlayerPluginSettings } from './types';
 
 export class SpotifyAuthorizer {
@@ -11,50 +10,54 @@ export class SpotifyAuthorizer {
   authTimeout: number | null = null;
 
   constructor(
-    private spotifyApi: SpotifyWebApi.SpotifyWebApiJs,
-    private settings: PlayerPluginSettings,
-    private redirectUri: string
+    private redirectUri: string,
+    private getSettings: () => PlayerPluginSettings,
+    private onTokenChanged: (accessToken: string | null) => void
   ) {
-    this.accessToken = settings.accessToken;
+    // TODO doesnt work after app restart anyway
+    this.accessToken = getSettings().accessToken;
   }
 
-  async authenticate(settings: PlayerPluginSettings) {
+  async authenticate() {
     // console.debug('Authenticating with Spotify...');
     const scopes = 'user-read-playback-state user-modify-playback-state';
-    const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${settings.clientId}&redirect_uri=${encodeURIComponent(this.redirectUri)}&scope=${encodeURIComponent(scopes)}`;
-    const tokenData = await this.getToken(authUrl, settings);
+    const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${this.getSettings().clientId}&redirect_uri=${encodeURIComponent(this.redirectUri)}&scope=${encodeURIComponent(scopes)}`;
+    const tokenData = await this.getToken(authUrl);
     if (!tokenData) {
       console.error('Failed to get token data');
       return;
     }
     this.accessToken = tokenData.accessToken;
     this.refreshToken = tokenData.refreshToken;
-    this.spotifyApi.setAccessToken(this.accessToken);
+    this.onTokenChanged(this.accessToken);
     if (this.refreshToken) {
       if (this.refreshTimeout) clearTimeout(this.refreshTimeout);
       this.refreshTimeout = setTimeout(() => {
-        this.refreshAccessToken(settings);
+        this.refreshAccessToken();
       }, 3500000); // Try to refresh token (almost) every hour
     }
   }
 
   // TODO test properly
-  async refreshAccessToken(settings: PlayerPluginSettings) {
+  async refreshAccessToken() {
     if (!this.refreshToken) {
       console.error('No refresh token available.');
       return;
     }
-    let tokenData = await fetch(`https://accounts.spotify.com/api/token`, {
+    const tokenData = await fetch(`https://accounts.spotify.com/api/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Authorization:
-          'Basic ' + btoa(settings.clientId + ':' + settings.clientSecret),
+          'Basic ' +
+          btoa(
+            this.getSettings().clientId + ':' + this.getSettings().clientSecret
+          ),
       },
       body: new URLSearchParams({
         grant_type: 'refresh_token',
         refresh_token: this.refreshToken,
-        client_id: settings.clientId,
+        client_id: this.getSettings().clientId,
       }),
     })
       .then((response) => response.json())
@@ -70,11 +73,11 @@ export class SpotifyAuthorizer {
     if (tokenData) {
       if (tokenData.accessToken) this.accessToken = tokenData.accessToken;
       if (tokenData.refreshToken) this.refreshToken = tokenData.refreshToken;
-      this.spotifyApi.setAccessToken(this.accessToken);
+      this.onTokenChanged(this.accessToken);
       if (this.refreshToken) {
         if (this.refreshTimeout) clearTimeout(this.refreshTimeout);
         this.refreshTimeout = setTimeout(() => {
-          this.refreshAccessToken(settings);
+          this.refreshAccessToken();
         }, 3500000); // Refresh token (almost) every hour
       }
     }
@@ -94,7 +97,7 @@ export class SpotifyAuthorizer {
   ) {
     if (this.authTimeout) clearTimeout(this.authTimeout);
 
-    let tokenData = await fetch(`https://accounts.spotify.com/api/token`, {
+    const tokenData = await fetch(`https://accounts.spotify.com/api/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -121,8 +124,7 @@ export class SpotifyAuthorizer {
   }
 
   private async getToken(
-    authUrl: string,
-    settings: PlayerPluginSettings
+    authUrl: string
   ): Promise<{ accessToken: string; refreshToken: string } | null> {
     return new Promise((resolve, reject) => {
       this.authPromiseResolve = resolve;
