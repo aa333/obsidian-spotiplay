@@ -9,11 +9,6 @@ dist/
 build/
 *.tsbuildinfo
 
-# TypeScript
-*.d.ts
-*.js.map
-*.js
-
 # Logs
 npm-debug.log*
 yarn-debug.log*

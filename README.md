@@ -23,30 +23,22 @@ Unfortunately, these API functions are only available for premium Spotify subscr
    ```
    git clone https://github.com/aa333/obsidian-spotiplay.git
    ```
-3. Install dependencies (NPM should work as well):
-   ```
-   pnpm i
-   ```
-4. Build the plugin:
-   ```
-   pnpm build
-   ```
-5. Enable the plugin in Obsidian settings.
+3. Enable the plugin in Obsidian settings.
 
 ## Usage
 
 Add a code block in your note with the `spotiplayer` language tag and following format:
 
-~~~
+````
 ```spotiplayer
 label: Tavern Theme
 uri: spotify:track:2uFaJJtFpPDc5Pa95XzTvg
 ```
-~~~
+````
 
 - `label`: The button label.
 - `uri`: The Spotify URI for a track, playlist, or album. No quotes, `spotify:` prefix required.
-Example: https://open.spotify.com/track/0NNCkIadCP6VnV7LeGL1zx will turn into `spotify:track:0NNCkIadCP6VnV7LeGL1zx`
+  Example: https://open.spotify.com/track/0NNCkIadCP6VnV7LeGL1zx will turn into `spotify:track:0NNCkIadCP6VnV7LeGL1zx`
 
 Click the button. Browser window will open - allow access to your account and redirect back to Obsidian. Your music should play.
 
@@ -60,7 +52,7 @@ Click the button. Browser window will open - allow access to your account and re
 
 ## Contributing
 
-Feel free to submit issues or pull requests for improvements or bug fixes. 
+Feel free to submit issues or pull requests for improvements or bug fixes.
 
 ## License
 
