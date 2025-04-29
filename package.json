@@ -1,0 +1,29 @@
+{
+  "name": "obsidian-spotiplayer",
+  "version": "1.0.0",
+  "description": "Simple Spotify Player controller for Obsidian",
+  "main": "main.js",
+  "scripts": {
+    "build": "node esbuild.js",
+    "clean": "rm -rf dist",
+    "prepare": "pnpm run clean && pnpm run build",
+    "dev": "node esbuild.js --watch"
+  },
+  "keywords": [
+    "obsidian",
+    "plugin",
+    "spotify"
+  ],
+  "author": "Anatolii Sazanov (A333)",
+  "license": "MIT",
+  "dependencies": {
+    "obsidian": "^0.12.0",
+    "prettier": "^3.5.3",
+    "spotify-web-api-js": "^1.5.2"
+  },
+  "devDependencies": {
+    "cpx": "^1.5.0",
+    "esbuild": "^0.25.3",
+    "typescript": "^4.0.0"
+  }
+}
