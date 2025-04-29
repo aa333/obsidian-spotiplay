@@ -20,9 +20,13 @@ export default class PlayerPlugin extends Plugin {
 
     this.spotifyApi = new SpotifyWebApi();
     this.authorizer = new SpotifyAuthorizer(
-      this.spotifyApi,
-      this.settings,
-      'obsidian://obsidian-spotiplay'
+      'obsidian://obsidian-spotiplay',
+      () => this.settings,
+      (accessToken) => {
+        this.settings.accessToken = accessToken;
+        this.saveSettings();
+        this.spotifyApi.setAccessToken(accessToken);
+      }
     );
 
     this.registerObsidianProtocolHandler('obsidian-spotiplay', async (data) => {
@@ -32,7 +36,7 @@ export default class PlayerPlugin extends Plugin {
 
     this.registerMarkdownCodeBlockProcessor(
       'spotiplayer',
-      async (source, el, ctx) => {
+      async (source, el) => {
         let parsedData: Record<string, string> = {};
         try {
           parsedData = this.parseData(source);
@@ -70,7 +74,7 @@ export default class PlayerPlugin extends Plugin {
     return parsedData;
   }
 
-  async checkToken(uri: string) {
+  async checkToken() {
     this.logger.debug('Checking token validity...');
     if (!this.authorizer.getAccessToken()) {
       this.logger.debug('No token');
@@ -141,9 +145,9 @@ export default class PlayerPlugin extends Plugin {
 
   private async onClick(uri: string) {
     this.logger.debug('Play button clicked:', uri);
-    const isTokenValid = await this.checkToken(uri);
+    const isTokenValid = await this.checkToken();
     if (!isTokenValid) {
-      await this.authorizer.authenticate(this.settings);
+      await this.authorizer.authenticate();
     }
 
     if (!this.authorizer.getAccessToken()) {
