@@ -133,17 +133,19 @@ export default class PlayerPlugin extends Plugin {
         }
       }
       
-      if (uri.startsWith('spotify:track:')) {
-        uris = [uri];
+      if (processedUri.startsWith('spotify:track:')) {
+        uris = [processedUri];
       } else if (
-        uri.startsWith('spotify:playlist:') ||
-        uri.startsWith('spotify:album:')
+        processedUri.startsWith('spotify:playlist:') ||
+        processedUri.startsWith('spotify:album:')
       ) {
-        context_uri = uri;
+        context_uri = processedUri;
       } else {
-        this.logger.error('Invalid URI format:', uri);
-        return 'Invalid URI, should be "spotify:track:..." or "spotify:playlist:..." or "spotify:album:..."';
+        // It wasn't a web URL and it's not a valid spotify: URI format
+        this.logger.error('Invalid URI format:', uri); // Log original URI for clarity
+        return 'Invalid URI or unsupported web URL type. Should be "spotify:track:...", "spotify:playlist:...", "spotify:album:...", or the corresponding open.spotify.com URL.';
       }
+
       await this.spotifyApi.play({
         device_id: this.settings.deviceId,
         uris,
@@ -151,9 +153,11 @@ export default class PlayerPlugin extends Plugin {
       });
     } catch (error) {
       this.logger.error('Error playing track:', error);
-      return `Error playing track. ${(error as XMLHttpRequest).responseText}`;
+      // Attempt to get a more specific error message from the Spotify API response
+      const errorMessage = (error as any)?.response?.data?.error?.message || (error as Error).message || 'Unknown error';
+      return `Error playing track: ${errorMessage}`;
     }
-    this.logger.debug('Playing track:', uri);
+    this.logger.debug('Playing item:', processedUri); // Log the processed URI
   }
 
   private createPlayButton(label: string, uri: string, parent: HTMLElement) {
