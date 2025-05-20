@@ -105,7 +105,7 @@ export default class PlayerPlugin extends Plugin {
     this.logger.debug('Selected device:', this.settings.deviceId);
   }
 
-  private async playTrack(uri: string) {
+    private async playTrack(uri: string) {
     if (!this.settings.deviceId) {
       this.logger.error('No device selected for playback.');
       return 'No device available for playback. Make sure Spotify player is open and available.';
@@ -119,7 +119,8 @@ export default class PlayerPlugin extends Plugin {
       // Check if it's a Spotify web URL
       if (processedUri.startsWith('https://open.spotify.com/')) {
         // Use a regex to capture the type (track, playlist, album) and the ID
-        const urlMatch = processedUri.match(/^https:\/\/open\.spotify\.com\/(track|playlist|album)\/([a-zA-Z0-9]+)/);
+        // Explicitly allow any characters after the ID part of the path
+        const urlMatch = processedUri.match(/^https:\/\/open\.spotify\.com\/(track|playlist|album)\/([a-zA-Z0-9]+).*$/); // <-- Modified regex
 
         if (urlMatch) {
           const type = urlMatch[1]; // 'track', 'playlist', or 'album'
@@ -127,7 +128,7 @@ export default class PlayerPlugin extends Plugin {
           processedUri = `spotify:${type}:${id}`; // Convert to spotify URI format
           this.logger.debug(`Converted web URL to URI: ${processedUri}`);
         } else {
-          // It's a Spotify web URL but not a supported type (track, playlist, album)
+          // It's a Spotify web URL but doesn't match the expected structure (type/id)
           this.logger.error('Unsupported Spotify web URL format:', uri);
           return 'Unsupported Spotify web URL. Please use a link for a track, playlist, or album.';
         }
@@ -159,6 +160,7 @@ export default class PlayerPlugin extends Plugin {
     }
     this.logger.debug('Playing item:', processedUri); // Log the processed URI
   }
+
 
   private createPlayButton(label: string, uri: string, parent: HTMLElement) {
     const btn = new PlayButton(label, uri, parent, (result) =>
