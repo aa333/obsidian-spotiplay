@@ -113,6 +113,26 @@ export default class PlayerPlugin extends Plugin {
     try {
       let uris = undefined;
       let context_uri = undefined;
+
+      let processedUri = uri.trim(); // Trim whitespace just in case
+
+      // Check if it's a Spotify web URL
+      if (processedUri.startsWith('https://open.spotify.com/')) {
+        // Use a regex to capture the type (track, playlist, album) and the ID
+        const urlMatch = processedUri.match(/^https:\/\/open\.spotify\.com\/(track|playlist|album)\/([a-zA-Z0-9]+)/);
+
+        if (urlMatch) {
+          const type = urlMatch[1]; // 'track', 'playlist', or 'album'
+          const id = urlMatch[2];
+          processedUri = `spotify:${type}:${id}`; // Convert to spotify URI format
+          this.logger.debug(`Converted web URL to URI: ${processedUri}`);
+        } else {
+          // It's a Spotify web URL but not a supported type (track, playlist, album)
+          this.logger.error('Unsupported Spotify web URL format:', uri);
+          return 'Unsupported Spotify web URL. Please use a link for a track, playlist, or album.';
+        }
+      }
+      
       if (uri.startsWith('spotify:track:')) {
         uris = [uri];
       } else if (
