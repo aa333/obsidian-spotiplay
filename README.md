@@ -44,6 +44,19 @@ Click the button. Browser window will open - allow access to your account and re
 
 ## Development
 
+- Install Node (https://nodejs.org/)
+- Enable Corepack to automatically handle package managers
+  ```
+  corepack enable && corepack enable npm
+  ```
+  Or, alternatively, install pnpm manually:
+  ```
+  npm install pnpm -g
+  ```
+- Install libraries
+  ```
+  pnpm install
+  ```
 - Run in watch mode:
   ```
   pnpm dev
